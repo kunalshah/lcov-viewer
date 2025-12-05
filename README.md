@@ -3,20 +3,29 @@
 A simple, browser-based tool for viewing code coverage reports in a
 human-friendly format.
 
+## TLDR
+
+View online LCOV code coverage viewer at
+[kunalshah.github.io/lcov-viewer](https://kunalshah.github.io/lcov-viewer/)
+
 ## What is this?
 
-Test runners like [Bun](https://bun.com/docs/test/code-coverage) generate code
-coverage reports in LCOV format, which is great for machines but difficult for
-humans to read. This viewer transforms the code coverage report into an
-easy-to-navigate, intuitive visual interface.
+Tools like [Bun](https://bun.com/docs/test/code-coverage) and
+[Flutter](https://docs.flutter.dev/testing/overview) generate code coverage
+reports in LCOV format, which is great for machines but difficult for humans to
+read.
 
-LCOV report can be viewed in a `Tree View`, or a `List view`.
+This viewer transforms the LCOV code coverage report into an easy-to-navigate,
+intuitive visual interface.
 
-In the **`Tree View`**, report is organized in a tree format to easily see code
-coverage by folder(s).
+With this HTML viewer, LCOV report can be viewed in a `Tree View`, or a
+`List view`.
 
-In the **`List View`**, you can sort code coverage by `Name`, by
-`High to Low Coverage`, by `Low to High Coverage`, and by `Total Lines`
+- In the **`Tree View`**, report is organized in a tree format to easily see
+  code coverage by folder(s).
+
+- In the **`List View`**, you can sort code coverage by `Name`, by
+  `High to Low Coverage`, by `Low to High Coverage`, and by `Total Lines`
 
 ## How to use it
 

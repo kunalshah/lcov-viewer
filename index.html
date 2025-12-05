@@ -214,7 +214,8 @@
             background: var(--bg-secondary);
             border-radius: 12px;
             border: 1px solid var(--border);
-            overflow: hidden;
+            overflow: visible;
+            min-height: fit-content;
         }
 
         .file-item {
@@ -447,6 +448,11 @@
             gap: 0.5rem;
             margin-bottom: 1rem;
             flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            padding: 1rem 0;
+            z-index: 100;
         }
 
         .sort-btn {
@@ -475,6 +481,7 @@
             border-left: 2px solid var(--border);
             margin-left: 1rem;
             padding-left: 1rem;
+            min-height: fit-content;
         }
 
         .folder-header {
@@ -520,10 +527,12 @@
 
         .folder-children {
             display: none;
+            overflow: visible;
         }
 
         .folder-children.expanded {
             display: block;
+            overflow: visible;
         }
 
         .file-item.nested {
@@ -606,11 +615,18 @@
             </div>
 
             <div class="sort-buttons" id="sortButtons">
-                <button class="sort-btn active" data-sort="name-asc">Name ↑</button>
-                <button class="sort-btn" data-sort="name-desc">Name ↓</button>
-                <button class="sort-btn" data-sort="coverage-asc">Coverage ↑</button>
-                <button class="sort-btn" data-sort="coverage-desc">Coverage ↓</button>
-                <button class="sort-btn" data-sort="lines">Total Lines</button>
+                <button class="sort-btn active" data-sort="name" data-direction="asc" onclick="viewer.toggleSort('name', this)">
+                    File Name ↑
+                </button>
+                <button class="sort-btn" data-sort="coverage" data-direction="desc" onclick="viewer.toggleSort('coverage', this)">
+                    Coverage ↓
+                </button>
+                <button class="sort-btn" data-sort="lines" data-direction="desc" onclick="viewer.toggleSort('lines', this)">
+                    Lines ↓
+                </button>
+                <button class="sort-btn" data-sort="functions" data-direction="desc" onclick="viewer.toggleSort('functions', this)">
+                    Functions ↓
+                </button>
             </div>
 
             <div class="sort-buttons" id="treeButtons" style="display: none;">
@@ -753,15 +769,6 @@
                     this.filterFiles(e.target.value);
                 });
 
-                document.querySelectorAll('.sort-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        document.querySelectorAll('.sort-btn').forEach(b => { b.classList.remove('active'); });
-                        e.target.classList.add('active');
-                        this.currentSort = e.target.dataset.sort;
-                        this.sortAndRenderFiles();
-                    });
-                });
-
                 document.querySelectorAll('.view-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         document.querySelectorAll('.view-btn').forEach(b => { b.classList.remove('active'); });
@@ -897,30 +904,36 @@
 
             sortAndRenderFiles() {
                 const files = [...this.filteredFiles];
+                const [sortType, sortDirection] = this.currentSort.split('-');
 
-                switch (this.currentSort) {
-                    case 'name-asc':
-                        files.sort((a, b) => a.path.localeCompare(b.path));
+                switch (sortType) {
+                    case 'name':
+                        if (sortDirection === 'asc') {
+                            files.sort((a, b) => a.path.localeCompare(b.path));
+                        } else {
+                            files.sort((a, b) => b.path.localeCompare(a.path));
+                        }
                         break;
-                    case 'name-desc':
-                        files.sort((a, b) => b.path.localeCompare(a.path));
-                        break;
-                    case 'coverage-asc':
+                    case 'coverage':
                         files.sort((a, b) => {
                             const aCov = LCOVParser.calculatePercentage(a.linesHit, a.linesFound);
                             const bCov = LCOVParser.calculatePercentage(b.linesHit, b.linesFound);
-                            return aCov - bCov;
-                        });
-                        break;
-                    case 'coverage-desc':
-                        files.sort((a, b) => {
-                            const aCov = LCOVParser.calculatePercentage(a.linesHit, a.linesFound);
-                            const bCov = LCOVParser.calculatePercentage(b.linesHit, b.linesFound);
-                            return bCov - aCov;
+                            return sortDirection === 'asc' ? aCov - bCov : bCov - aCov;
                         });
                         break;
                     case 'lines':
-                        files.sort((a, b) => b.linesFound - a.linesFound);
+                        if (sortDirection === 'asc') {
+                            files.sort((a, b) => a.linesFound - b.linesFound);
+                        } else {
+                            files.sort((a, b) => b.linesFound - a.linesFound);
+                        }
+                        break;
+                    case 'functions':
+                        if (sortDirection === 'asc') {
+                            files.sort((a, b) => a.functionsFound - b.functionsFound);
+                        } else {
+                            files.sort((a, b) => b.functionsFound - a.functionsFound);
+                        }
                         break;
                 }
 
@@ -1091,6 +1104,30 @@
 
             collapseAll() {
                 this.expandedFolders.clear();
+                this.sortAndRenderFiles();
+            }
+
+            toggleSort(sortType, button) {
+                // Remove active class from all sort buttons
+                document.querySelectorAll('.sort-btn').forEach(b => { b.classList.remove('active'); });
+                button.classList.add('active');
+
+                const currentDirection = button.dataset.direction;
+                const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+                button.dataset.direction = newDirection;
+
+                // Update button text with new arrow
+                const arrows = { asc: '↑', desc: '↓' };
+                const labels = { 
+                    name: 'File Name', 
+                    coverage: 'Coverage', 
+                    lines: 'Lines',
+                    functions: 'Functions'
+                };
+                button.textContent = `${labels[sortType]} ${arrows[newDirection]}`;
+
+                // Update current sort
+                this.currentSort = `${sortType}-${newDirection}`;
                 this.sortAndRenderFiles();
             }
 

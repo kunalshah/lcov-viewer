@@ -5,10 +5,10 @@ interface.
 
 ## TLDR
 
-See online LCOV code coverage viewer at
+See online LCOV viewer at
 [kunalshah.github.io/lcov-viewer](https://kunalshah.github.io/lcov-viewer/)
 
-LCOV Viewer is mobile friendly but use Desktop for the best experience.
+LCOV Viewer is mobile friendly but view it on Desktop for the best experience.
 
 ## What is this?
 

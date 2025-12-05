@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCOV Coverage Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .upload-section {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+            border: 2px dashed var(--border);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 2rem;
+        }
+
+        .upload-section:hover {
+            border-color: var(--primary);
+            background: var(--bg-tertiary);
+            transform: translateY(-2px);
+        }
+
+        .upload-section.dragover {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.6;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .upload-subtext {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px var(--shadow);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px var(--shadow);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-progress {
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.75rem;
+        }
+
+        .stat-progress-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+
+        .progress-high {
+            background: linear-gradient(90deg, var(--success), #34d399);
+        }
+
+        .progress-medium {
+            background: linear-gradient(90deg, var(--warning), #fbbf24);
+        }
+
+        .progress-low {
+            background: linear-gradient(90deg, var(--danger), #f87171);
+        }
+
+        .search-bar {
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .files-section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .file-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .file-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text);
+            flex: 1;
+            word-break: break-all;
+        }
+
+        .file-stats {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .file-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .file-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .file-stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .file-details {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: none;
+        }
+
+        .file-details.active {
+            display: block;
+        }
+
+        .coverage-bar {
+            display: flex;
+            height: 40px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--bg-tertiary);
+            margin-bottom: 1rem;
+        }
+
+        .coverage-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .coverage-segment:hover {
+            filter: brightness(1.2);
+        }
+
+        .covered {
+            background: var(--success);
+        }
+
+        .uncovered {
+            background: var(--danger);
+        }
+
+        .line-coverage {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin-bottom: 0.25rem;
+        }
+
+        .line-coverage:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .line-number {
+            color: var(--text-muted);
+            text-align: right;
+            min-width: 60px;
+        }
+
+        .line-indicator {
+            width: 60px;
+            text-align: center;
+            font-weight: 600;
+            border-radius: 4px;
+            padding: 0.125rem 0.5rem;
+        }
+
+        .line-covered {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .line-uncovered {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-high {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .badge-medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .badge-low {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .file-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .file-stats {
+                width: 100%;
+            }
+
+            .line-coverage {
+                font-size: 0.75rem;
+                gap: 0.5rem;
+            }
+        }
+
+        .sort-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .sort-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .sort-btn:hover {
+            background: var(--bg-secondary);
+        }
+
+        .sort-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .folder {
+            border-left: 2px solid var(--border);
+            margin-left: 1rem;
+            padding-left: 1rem;
+        }
+
+        .folder-header {
+            padding: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .folder-header:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .folder-icon {
+            font-size: 1.25rem;
+            transition: transform 0.3s ease;
+        }
+
+        .folder-icon.expanded {
+            transform: rotate(90deg);
+        }
+
+        .folder-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text);
+            flex: 1;
+        }
+
+        .folder-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .folder-stat {
+            color: var(--text-muted);
+        }
+
+        .folder-children {
+            display: none;
+        }
+
+        .folder-children.expanded {
+            display: block;
+        }
+
+        .file-item.nested {
+            margin-left: 0;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .view-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .view-btn:hover {
+            background: var(--bg-secondary);
+        }
+
+        .view-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LCOV Coverage Viewer</h1>
+            <p class="subtitle">Upload your LCOV file to visualize code coverage metrics</p>
+        </header>
+
+        <div id="uploadSection" class="upload-section">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">Drop your LCOV file here or click to browse</div>
+            <div class="upload-subtext">Supports .info, .lcov files or drag & drop</div>
+            <button class="btn" onclick="document.getElementById('fileInput').click()">Select File</button>
+            <input type="file" id="fileInput" accept=".info,.lcov,.txt" />
+        </div>
+
+        <div id="loadingSection" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Parsing LCOV file...</p>
+        </div>
+
+        <div id="contentSection" class="hidden">
+            <div class="stats-grid" id="statsGrid"></div>
+
+            <div class="search-bar">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="🔍 Search files by name or path..."
+                />
+            </div>
+
+            <div class="view-toggle">
+                <button class="view-btn active" data-view="list">
+                    📄 List View
+                </button>
+                <button class="view-btn" data-view="tree">
+                    📁 Tree View
+                </button>
+            </div>
+
+            <div class="sort-buttons" id="sortButtons">
+                <button class="sort-btn active" data-sort="name">Sort by Name</button>
+                <button class="sort-btn" data-sort="coverage-asc">Coverage (Low to High)</button>
+                <button class="sort-btn" data-sort="coverage-desc">Coverage (High to Low)</button>
+                <button class="sort-btn" data-sort="lines">Total Lines</button>
+            </div>
+
+            <div class="files-section" id="filesSection"></div>
+        </div>
+    </div>
+
+    <script>
+        class LCOVParser {
+            constructor() {
+                this.files = [];
+                this.totalStats = {
+                    lines: 0,
+                    linesHit: 0,
+                    functions: 0,
+                    functionsHit: 0,
+                    branches: 0,
+                    branchesHit: 0
+                };
+            }
+
+            parse(content) {
+                const lines = content.split('\n');
+                let currentFile = null;
+
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    
+                    if (trimmed.startsWith('SF:')) {
+                        currentFile = {
+                            path: trimmed.substring(3),
+                            lines: [],
+                            linesFound: 0,
+                            linesHit: 0,
+                            functionsFound: 0,
+                            functionsHit: 0,
+                            branchesFound: 0,
+                            branchesHit: 0
+                        };
+                    } else if (trimmed.startsWith('DA:')) {
+                        const parts = trimmed.substring(3).split(',');
+                        const lineNumber = parseInt(parts[0]);
+                        const hitCount = parseInt(parts[1]);
+                        if (currentFile) {
+                            currentFile.lines.push({ lineNumber, hitCount });
+                        }
+                    } else if (trimmed.startsWith('LF:')) {
+                        if (currentFile) {
+                            currentFile.linesFound = parseInt(trimmed.substring(3));
+                        }
+                    } else if (trimmed.startsWith('LH:')) {
+                        if (currentFile) {
+                            currentFile.linesHit = parseInt(trimmed.substring(3));
+                        }
+                    } else if (trimmed.startsWith('FNF:')) {
+                        if (currentFile) {
+                            currentFile.functionsFound = parseInt(trimmed.substring(4));
+                        }
+                    } else if (trimmed.startsWith('FNH:')) {
+                        if (currentFile) {
+                            currentFile.functionsHit = parseInt(trimmed.substring(4));
+                        }
+                    } else if (trimmed.startsWith('BRF:')) {
+                        if (currentFile) {
+                            currentFile.branchesFound = parseInt(trimmed.substring(4));
+                        }
+                    } else if (trimmed.startsWith('BRH:')) {
+                        if (currentFile) {
+                            currentFile.branchesHit = parseInt(trimmed.substring(4));
+                        }
+                    } else if (trimmed === 'end_of_record') {
+                        if (currentFile) {
+                            this.files.push(currentFile);
+                            this.totalStats.lines += currentFile.linesFound;
+                            this.totalStats.linesHit += currentFile.linesHit;
+                            this.totalStats.functions += currentFile.functionsFound;
+                            this.totalStats.functionsHit += currentFile.functionsHit;
+                            this.totalStats.branches += currentFile.branchesFound;
+                            this.totalStats.branchesHit += currentFile.branchesHit;
+                            currentFile = null;
+                        }
+                    }
+                }
+
+                return {
+                    files: this.files,
+                    totalStats: this.totalStats
+                };
+            }
+
+            static calculatePercentage(hit, total) {
+                return total === 0 ? 0 : Math.round((hit / total) * 100 * 10) / 10;
+            }
+
+            static getCoverageLevel(percentage) {
+                if (percentage >= 80) return 'high';
+                if (percentage >= 50) return 'medium';
+                return 'low';
+            }
+        }
+
+        class CoverageViewer {
+            constructor() {
+                this.parser = new LCOVParser();
+                this.data = null;
+                this.filteredFiles = [];
+                this.currentSort = 'name';
+                this.currentView = 'list';
+                this.expandedFolders = new Set();
+                this.init();
+            }
+
+            init() {
+                const uploadSection = document.getElementById('uploadSection');
+                const fileInput = document.getElementById('fileInput');
+
+                fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+
+                uploadSection.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadSection.classList.add('dragover');
+                });
+
+                uploadSection.addEventListener('dragleave', () => {
+                    uploadSection.classList.remove('dragover');
+                });
+
+                uploadSection.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadSection.classList.remove('dragover');
+                    const file = e.dataTransfer.files[0];
+                    if (file) this.loadFile(file);
+                });
+
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.filterFiles(e.target.value);
+                });
+
+                document.querySelectorAll('.sort-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentSort = e.target.dataset.sort;
+                        this.sortAndRenderFiles();
+                    });
+                });
+
+                document.querySelectorAll('.view-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentView = e.target.dataset.view;
+                        
+                        // Show/hide sort buttons based on view mode
+                        const sortButtons = document.getElementById('sortButtons');
+                        if (this.currentView === 'tree') {
+                            sortButtons.style.display = 'none';
+                        } else {
+                            sortButtons.style.display = 'flex';
+                        }
+                        
+                        this.sortAndRenderFiles();
+                    });
+                });
+
+                // Check for file path in URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const filePath = urlParams.get('file');
+                if (filePath) {
+                    this.loadFileFromPath(filePath);
+                }
+            }
+
+            async loadFileFromPath(path) {
+                try {
+                    this.showLoading();
+                    const response = await fetch(path);
+                    if (!response.ok) throw new Error('Failed to load file');
+                    const content = await response.text();
+                    this.processContent(content);
+                } catch (error) {
+                    alert(`Error loading file: ${error.message}`);
+                    this.hideLoading();
+                }
+            }
+
+            handleFileSelect(event) {
+                const file = event.target.files[0];
+                if (file) this.loadFile(file);
+            }
+
+            loadFile(file) {
+                this.showLoading();
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.processContent(e.target.result);
+                };
+                reader.onerror = () => {
+                    alert('Error reading file');
+                    this.hideLoading();
+                };
+                reader.readAsText(file);
+            }
+
+            processContent(content) {
+                try {
+                    this.data = this.parser.parse(content);
+                    this.filteredFiles = [...this.data.files];
+                    this.hideLoading();
+                    this.render();
+                } catch (error) {
+                    alert(`Error parsing LCOV file: ${error.message}`);
+                    this.hideLoading();
+                }
+            }
+
+            showLoading() {
+                document.getElementById('uploadSection').classList.add('hidden');
+                document.getElementById('contentSection').classList.add('hidden');
+                document.getElementById('loadingSection').classList.remove('hidden');
+            }
+
+            hideLoading() {
+                document.getElementById('loadingSection').classList.add('hidden');
+                document.getElementById('uploadSection').classList.add('hidden');
+                document.getElementById('contentSection').classList.remove('hidden');
+            }
+
+            render() {
+                this.renderStats();
+                this.sortAndRenderFiles();
+            }
+
+            renderStats() {
+                const stats = this.data.totalStats;
+                const lineCoverage = LCOVParser.calculatePercentage(stats.linesHit, stats.lines);
+                const functionCoverage = LCOVParser.calculatePercentage(stats.functionsHit, stats.functions);
+                const branchCoverage = LCOVParser.calculatePercentage(stats.branchesHit, stats.branches);
+
+                const statsHTML = `
+                    <div class="stat-card">
+                        <div class="stat-label">Line Coverage</div>
+                        <div class="stat-value" style="color: ${this.getColorForPercentage(lineCoverage)}">${lineCoverage}%</div>
+                        <div>${stats.linesHit.toLocaleString()} / ${stats.lines.toLocaleString()} lines</div>
+                        <div class="stat-progress">
+                            <div class="stat-progress-bar progress-${LCOVParser.getCoverageLevel(lineCoverage)}" 
+                                 style="width: ${lineCoverage}%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Function Coverage</div>
+                        <div class="stat-value" style="color: ${this.getColorForPercentage(functionCoverage)}">${functionCoverage}%</div>
+                        <div>${stats.functionsHit.toLocaleString()} / ${stats.functions.toLocaleString()} functions</div>
+                        <div class="stat-progress">
+                            <div class="stat-progress-bar progress-${LCOVParser.getCoverageLevel(functionCoverage)}" 
+                                 style="width: ${functionCoverage}%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Branch Coverage</div>
+                        <div class="stat-value" style="color: ${this.getColorForPercentage(branchCoverage)}">${branchCoverage}%</div>
+                        <div>${stats.branchesHit.toLocaleString()} / ${stats.branches.toLocaleString()} branches</div>
+                        <div class="stat-progress">
+                            <div class="stat-progress-bar progress-${LCOVParser.getCoverageLevel(branchCoverage)}" 
+                                 style="width: ${branchCoverage}%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Files</div>
+                        <div class="stat-value" style="color: var(--primary)">${this.data.files.length}</div>
+                        <div>Source files analyzed</div>
+                    </div>
+                `;
+
+                document.getElementById('statsGrid').innerHTML = statsHTML;
+            }
+
+            sortAndRenderFiles() {
+                const files = [...this.filteredFiles];
+
+                switch (this.currentSort) {
+                    case 'name':
+                        files.sort((a, b) => a.path.localeCompare(b.path));
+                        break;
+                    case 'coverage-asc':
+                        files.sort((a, b) => {
+                            const aCov = LCOVParser.calculatePercentage(a.linesHit, a.linesFound);
+                            const bCov = LCOVParser.calculatePercentage(b.linesHit, b.linesFound);
+                            return aCov - bCov;
+                        });
+                        break;
+                    case 'coverage-desc':
+                        files.sort((a, b) => {
+                            const aCov = LCOVParser.calculatePercentage(a.linesHit, a.linesFound);
+                            const bCov = LCOVParser.calculatePercentage(b.linesHit, b.linesFound);
+                            return bCov - aCov;
+                        });
+                        break;
+                    case 'lines':
+                        files.sort((a, b) => b.linesFound - a.linesFound);
+                        break;
+                }
+
+                if (this.currentView === 'tree') {
+                    this.renderTreeView(files);
+                } else {
+                    this.renderFiles(files);
+                }
+            }
+
+            buildFileTree(files) {
+                const tree = {};
+
+                files.forEach((file, index) => {
+                    const parts = file.path.split('/');
+                    let current = tree;
+
+                    parts.forEach((part, i) => {
+                        if (i === parts.length - 1) {
+                            // This is a file
+                            if (!current._files) current._files = [];
+                            current._files.push({ ...file, index });
+                        } else {
+                            // This is a folder
+                            if (!current[part]) {
+                                current[part] = {};
+                            }
+                            current = current[part];
+                        }
+                    });
+                });
+
+                return tree;
+            }
+
+            calculateFolderStats(folder) {
+                let linesFound = 0;
+                let linesHit = 0;
+                let fileCount = 0;
+
+                const traverse = (node) => {
+                    if (node._files) {
+                        node._files.forEach(file => {
+                            linesFound += file.linesFound;
+                            linesHit += file.linesHit;
+                            fileCount++;
+                        });
+                    }
+
+                    Object.keys(node).forEach(key => {
+                        if (key !== '_files') {
+                            traverse(node[key]);
+                        }
+                    });
+                };
+
+                traverse(folder);
+                return { linesFound, linesHit, fileCount };
+            }
+
+            renderTreeView(files) {
+                const filesSection = document.getElementById('filesSection');
+
+                if (files.length === 0) {
+                    filesSection.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🔍</div>
+                            <p>No files found matching your search</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const tree = this.buildFileTree(files);
+                filesSection.innerHTML = this.renderTreeNode(tree, '');
+            }
+
+            renderTreeNode(node, path, level = 0) {
+                let html = '';
+
+                // Render folders first
+                const folders = Object.keys(node).filter(key => key !== '_files').sort();
+                folders.forEach(folderName => {
+                    const folderPath = path ? `${path}/${folderName}` : folderName;
+                    const stats = this.calculateFolderStats(node[folderName]);
+                    const coverage = LCOVParser.calculatePercentage(stats.linesHit, stats.linesFound);
+                    const isExpanded = this.expandedFolders.has(folderPath);
+
+                    html += `
+                        <div class="folder" style="margin-left: ${level * 1}rem;">
+                            <div class="folder-header" onclick="viewer.toggleFolder('${folderPath}')">
+                                <span class="folder-icon ${isExpanded ? 'expanded' : ''}">▶</span>
+                                <span class="folder-name">📁 ${folderName}</span>
+                                <div class="folder-stats">
+                                    <span class="folder-stat">${stats.fileCount} files</span>
+                                    <span class="folder-stat badge badge-${LCOVParser.getCoverageLevel(coverage)}">${coverage}%</span>
+                                </div>
+                            </div>
+                            <div class="folder-children ${isExpanded ? 'expanded' : ''}" id="folder-${folderPath.replace(/\//g, '-')}">
+                                ${this.renderTreeNode(node[folderName], folderPath, level + 1)}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                // Render files
+                if (node._files) {
+                    node._files.forEach(file => {
+                        const coverage = LCOVParser.calculatePercentage(file.linesHit, file.linesFound);
+                        const level_str = LCOVParser.getCoverageLevel(coverage);
+                        const fileName = file.path.split('/').pop();
+
+                        html += `
+                            <div class="file-item nested" data-index="${file.index}" style="margin-left: ${level * 1}rem;">
+                                <div class="file-header" onclick="viewer.toggleFileDetails(${file.index})">
+                                    <div class="file-name">
+                                        📄 ${fileName}
+                                    </div>
+                                    <div class="file-stats">
+                                        <div class="file-stat">
+                                            <span class="file-stat-label">Coverage</span>
+                                            <span class="file-stat-value badge badge-${level_str}">${coverage}%</span>
+                                        </div>
+                                        <div class="file-stat">
+                                            <span class="file-stat-label">Lines</span>
+                                            <span class="file-stat-value">${file.linesHit}/${file.linesFound}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="file-details" id="file-details-${file.index}">
+                                    ${this.renderFileDetails(file)}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                return html;
+            }
+
+            toggleFolder(folderPath) {
+                if (this.expandedFolders.has(folderPath)) {
+                    this.expandedFolders.delete(folderPath);
+                } else {
+                    this.expandedFolders.add(folderPath);
+                }
+                this.sortAndRenderFiles();
+            }
+
+            filterFiles(searchTerm) {
+                const term = searchTerm.toLowerCase();
+                this.filteredFiles = this.data.files.filter(file => 
+                    file.path.toLowerCase().includes(term)
+                );
+                this.sortAndRenderFiles();
+            }
+
+            renderFiles(files) {
+                const filesSection = document.getElementById('filesSection');
+
+                if (files.length === 0) {
+                    filesSection.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🔍</div>
+                            <p>No files found matching your search</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const filesHTML = files.map((file, index) => {
+                    const coverage = LCOVParser.calculatePercentage(file.linesHit, file.linesFound);
+                    const level = LCOVParser.getCoverageLevel(coverage);
+                    const fileName = file.path.split('/').pop();
+                    const filePath = file.path;
+
+                    return `
+                        <div class="file-item" data-index="${index}">
+                            <div class="file-header" onclick="viewer.toggleFileDetails(${index})">
+                                <div class="file-name">
+                                    ${fileName}
+                                    <div style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;">${filePath}</div>
+                                </div>
+                                <div class="file-stats">
+                                    <div class="file-stat">
+                                        <span class="file-stat-label">Coverage</span>
+                                        <span class="file-stat-value badge badge-${level}">${coverage}%</span>
+                                    </div>
+                                    <div class="file-stat">
+                                        <span class="file-stat-label">Lines</span>
+                                        <span class="file-stat-value">${file.linesHit}/${file.linesFound}</span>
+                                    </div>
+                                    ${file.functionsFound > 0 ? `
+                                    <div class="file-stat">
+                                        <span class="file-stat-label">Functions</span>
+                                        <span class="file-stat-value">${file.functionsHit}/${file.functionsFound}</span>
+                                    </div>
+                                    ` : ''}
+                                    ${file.branchesFound > 0 ? `
+                                    <div class="file-stat">
+                                        <span class="file-stat-label">Branches</span>
+                                        <span class="file-stat-value">${file.branchesHit}/${file.branchesFound}</span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            <div class="file-details" id="file-details-${index}">
+                                ${this.renderFileDetails(file)}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                filesSection.innerHTML = filesHTML;
+            }
+
+            renderFileDetails(file) {
+                const coverage = LCOVParser.calculatePercentage(file.linesHit, file.linesFound);
+                const uncoveredCount = file.linesFound - file.linesHit;
+                const coveredPercent = coverage;
+                const uncoveredPercent = 100 - coverage;
+
+                const sortedLines = [...file.lines].sort((a, b) => a.lineNumber - b.lineNumber);
+                const linesHTML = sortedLines.map(line => {
+                    const isCovered = line.hitCount > 0;
+                    return `
+                        <div class="line-coverage">
+                            <span class="line-number">Line ${line.lineNumber}</span>
+                            <div></div>
+                            <span class="line-indicator ${isCovered ? 'line-covered' : 'line-uncovered'}">
+                                ${isCovered ? `✓ ${line.hitCount}x` : '✗ 0x'}
+                            </span>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="coverage-bar">
+                        ${coveredPercent > 0 ? `
+                        <div class="coverage-segment covered" style="width: ${coveredPercent}%">
+                            ${coveredPercent > 10 ? `${file.linesHit} covered` : ''}
+                        </div>
+                        ` : ''}
+                        ${uncoveredPercent > 0 ? `
+                        <div class="coverage-segment uncovered" style="width: ${uncoveredPercent}%">
+                            ${uncoveredPercent > 10 ? `${uncoveredCount} uncovered` : ''}
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        ${linesHTML}
+                    </div>
+                `;
+            }
+
+            toggleFileDetails(index) {
+                const details = document.getElementById(`file-details-${index}`);
+                details.classList.toggle('active');
+            }
+
+            getColorForPercentage(percentage) {
+                if (percentage >= 80) return '#10b981';
+                if (percentage >= 50) return '#f59e0b';
+                return '#ef4444';
+            }
+        }
+
+        let viewer;
+        window.addEventListener('DOMContentLoaded', () => {
+            viewer = new CoverageViewer();
+        });
+    </script>
+</body>
+</html>

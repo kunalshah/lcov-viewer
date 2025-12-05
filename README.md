@@ -1,12 +1,14 @@
 # LCOV Viewer
 
-A simple, browser-based tool for viewing code coverage reports in a
-human-friendly format.
+A browser-based tool for viewing LCOV code coverage reports in an intuitive
+interface.
 
 ## TLDR
 
-View online LCOV code coverage viewer at
+See online LCOV code coverage viewer at
 [kunalshah.github.io/lcov-viewer](https://kunalshah.github.io/lcov-viewer/)
+
+LCOV Viewer is mobile friendly but use Desktop for the best experience.
 
 ## What is this?
 

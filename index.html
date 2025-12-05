@@ -606,9 +606,10 @@
             </div>
 
             <div class="sort-buttons" id="sortButtons">
-                <button class="sort-btn active" data-sort="name">Sort by Name</button>
-                <button class="sort-btn" data-sort="coverage-asc">Coverage (Low to High)</button>
-                <button class="sort-btn" data-sort="coverage-desc">Coverage (High to Low)</button>
+                <button class="sort-btn active" data-sort="name-asc">Name ↑</button>
+                <button class="sort-btn" data-sort="name-desc">Name ↓</button>
+                <button class="sort-btn" data-sort="coverage-asc">Coverage ↑</button>
+                <button class="sort-btn" data-sort="coverage-desc">Coverage ↓</button>
                 <button class="sort-btn" data-sort="lines">Total Lines</button>
             </div>
 
@@ -720,7 +721,7 @@
                 this.parser = new LCOVParser();
                 this.data = null;
                 this.filteredFiles = [];
-                this.currentSort = 'name';
+                this.currentSort = 'name-asc';
                 this.currentView = 'list';
                 this.expandedFolders = new Set();
                 this.init();
@@ -754,9 +755,7 @@
 
                 document.querySelectorAll('.sort-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
-                        document.querySelectorAll('.sort-btn').forEach(b => {
-                            b.classList.remove('active');
-                        });
+                        document.querySelectorAll('.sort-btn').forEach(b => { b.classList.remove('active'); });
                         e.target.classList.add('active');
                         this.currentSort = e.target.dataset.sort;
                         this.sortAndRenderFiles();
@@ -900,8 +899,11 @@
                 const files = [...this.filteredFiles];
 
                 switch (this.currentSort) {
-                    case 'name':
+                    case 'name-asc':
                         files.sort((a, b) => a.path.localeCompare(b.path));
+                        break;
+                    case 'name-desc':
+                        files.sort((a, b) => b.path.localeCompare(a.path));
                         break;
                     case 'coverage-asc':
                         files.sort((a, b) => {

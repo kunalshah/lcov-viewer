@@ -612,6 +612,11 @@
                 <button class="sort-btn" data-sort="lines">Total Lines</button>
             </div>
 
+            <div class="sort-buttons" id="treeButtons" style="display: none;">
+                <button class="sort-btn" onclick="viewer.expandAll()">Expand All</button>
+                <button class="sort-btn" onclick="viewer.collapseAll()">Collapse All</button>
+            </div>
+
             <div class="files-section" id="filesSection"></div>
         </div>
     </div>
@@ -762,12 +767,15 @@
                         e.target.classList.add('active');
                         this.currentView = e.target.dataset.view;
                         
-                        // Show/hide sort buttons based on view mode
+                        // Show/hide sort buttons and tree buttons based on view mode
                         const sortButtons = document.getElementById('sortButtons');
+                        const treeButtons = document.getElementById('treeButtons');
                         if (this.currentView === 'tree') {
                             sortButtons.style.display = 'none';
+                            treeButtons.style.display = 'flex';
                         } else {
                             sortButtons.style.display = 'flex';
+                            treeButtons.style.display = 'none';
                         }
                         
                         this.sortAndRenderFiles();
@@ -1055,6 +1063,30 @@
                 } else {
                     this.expandedFolders.add(folderPath);
                 }
+                this.sortAndRenderFiles();
+            }
+
+            expandAll() {
+                // Collect all folder paths from the current tree
+                const collectFolderPaths = (node, path = '', paths = []) => {
+                    Object.keys(node).forEach(key => {
+                        if (key !== '_files') {
+                            const folderPath = path ? `${path}/${key}` : key;
+                            paths.push(folderPath);
+                            collectFolderPaths(node[key], folderPath, paths);
+                        }
+                    });
+                    return paths;
+                };
+
+                const tree = this.buildFileTree(this.filteredFiles);
+                const allPaths = collectFolderPaths(tree);
+                allPaths.forEach(path => this.expandedFolders.add(path));
+                this.sortAndRenderFiles();
+            }
+
+            collapseAll() {
+                this.expandedFolders.clear();
                 this.sortAndRenderFiles();
             }
 

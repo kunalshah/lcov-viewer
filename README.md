@@ -1,14 +1,12 @@
 # LCOV Viewer
 
-A browser-based tool for viewing LCOV code coverage reports in an intuitive
-interface.
+A browser-based intuitive UI for viewing LCOV code coverage reports. UI is
+mobile friendly but view it on Desktop for the best experience.
 
 ## TLDR
 
 See online LCOV viewer at
 [kunalshah.github.io/lcov-viewer](https://kunalshah.github.io/lcov-viewer/)
-
-LCOV Viewer is mobile friendly but view it on Desktop for the best experience.
 
 ## What is this?
 
@@ -24,10 +22,13 @@ With this HTML viewer, LCOV report can be viewed in a `Tree View`, or a
 `List view`.
 
 - In the **`Tree View`**, report is organized in a tree format to easily see
-  code coverage by folder(s).
+  report by folder(s).
 
-- In the **`List View`**, you can sort code coverage by `Name`, by
-  `High to Low Coverage`, by `Low to High Coverage`, and by `Total Lines`
+- In the **`List View`**, you can sort by:
+  - `File Name`
+  - `Coverage` (Amount of Code Coverage in a File)
+  - `Lines` (Number of Lines in a File)
+  - `Functions` (Number of Functions in a File)
 
 ## How to use it
 
@@ -43,21 +44,22 @@ Your code coverage report stays completely in your browser.
 
 ### Offline
 
-Download
+Directly download
 [index.html](https://raw.githubusercontent.com/kunalshah/lcov-viewer/refs/heads/main/index.html)
-or clone this [repository](git@github.com:kunalshah/lcov-viewer.git) and open
-`index.html` in your browser or serve through a static file server like nginx.
-
-The entire viewer is contained in a single HTML file, so it works completely
-offline.
+or clone this repository and open `index.html` in your browser, or serve through
+a static file server like nginx.
 
 ## Features
 
-- ✨ **No dependencies** – Everything runs in your browser
-- 🔒 **Privacy-friendly** – Your coverage data never leaves your machine
-- 📦 **Self-contained** – Just one HTML file
 - 🎨 **Clean interface** – Easy to navigate and understand your coverage
+- 📦 **Self-contained** – Single HTML file without any dependencies
+- 🔒 **Privacy-friendly**
+  - Your coverage data never leaves your machine
+  - No cookies
+  - No tracking
+  - No request to any website
+  - Works offline
 
 ## License
 
-This project is free to use for any purpose. No attribution required. Enjoy!
+This project is free to use for any purpose. No attribution required.
